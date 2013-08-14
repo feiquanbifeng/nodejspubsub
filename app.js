@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -21,6 +20,7 @@ rabbitConn.on('ready', function() {
 
 var app = express();
 
+// redis session store if connect the remote server config the options
 var RedisStore = require('connect-redis')(express),
     rClient = redis.createClient(),
     sessionStore = new RedisStore({client: rClient});
@@ -43,9 +43,9 @@ app.use(express.methodOverride());
 
 app.use(cookieParser);
 app.use(express.session({
-          store: sessionStore
-          })
-        );
+    store: sessionStore
+  })
+);
 
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
@@ -56,6 +56,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
+
 // app.get('/users', user.list);
 app.get('/users', function(req, res) {
   req.session.user = req.body.user;
@@ -69,30 +70,30 @@ sessionSockets.on('connection', function(err, socket, session) {
     socket.on('chat', function(data) {
        var msg = JSON.parse(data);
        var reply = JSON.stringify({
-                                  action: 'message',
-                                  user: msg.user,
-                                  msg: msg.msg}
-                                 );
+                      action: 'message',
+                      user: msg.user,
+                      msg: msg.msg
+                   });
         chatExchange.publish('', reply);
      });
 
      socket.on('join', function() {
        var reply = JSON.stringify({
-                                   action: 'control',
-                                   user: session.user,
-                                   msg: 'joined the channel'
-                                  });
+                      action: 'control',
+                      user: session.user,
+                      msg: 'joined the channel'
+                   });
         console.log('*************' + reply);
         chatExchange.publish('', reply) ;
 
      });
 
-     rabbitConn.queue('', {exclusive: true}, function(q){
-     q.bind('chatExchange', '#');
-     q.subscribe(function(message) {
-        console.log('Message received (' + 1 + '): ' + message.data);
-        console.log('======' + JSON.parse(message.data) + '========');
-        socket.emit('chat', JSON.parse(message.data));
+     rabbitConn.queue('', {exclusive: true}, function(q) {
+       q.bind('chatExchange', '#');
+       q.subscribe(function(message) {
+          console.log('Message received (' + 1 + '): ' + message.data);
+          console.log('======' + JSON.parse(message.data) + '========');
+          socket.emit('chat', JSON.parse(message.data));
      });   
   });
 });
