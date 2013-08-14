@@ -36,10 +36,10 @@ $(document).ready(function(){
 
                 // handler for callback
                 socket.on('chat', function (msg) {
-                       // the msg need not JSON convert
-                       // var message = $.evalJSON(msg)[data];
-                       var message =  msg;
-                     if (typeof message != 'object') return;
+                        // the msg need not JSON convert
+                        // var message = $.evalJSON(msg)[data];
+                        var message =  msg;
+                        if (typeof message != 'object') return;
 
                         var action = message.action;
                         var struct = container.find('li.' + action + ':first');
